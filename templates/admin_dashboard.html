@@ -21,12 +21,14 @@
                 <a href="{{ url_for('delete_user', username=username) }}">Delete</a>
                 {% endif %}
             </td>
+            
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<a href="{{ url_for('add_user') }}">Add New User</a>
-
+<tr>
+    <td><a href="{{ url_for('add_user') }}">Add New User</a></td>
+</tr>
 <h3>Manage Lectures</h3>
 <table>
     <thead>

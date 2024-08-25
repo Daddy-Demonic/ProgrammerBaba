@@ -4,7 +4,7 @@
 <h2>Announcements</h2>
 {% for announcement in announcements %}
     <div class="announcement">
-        <p><strong>{{ announcement.author }}</strong>: {{ announcement.content }}</p>
+        <p><h4><strong>{{ announcement.author }} :</strong></h4> >>> {{ announcement.content }}</p>
     </div>
 {% endfor %}
 {% if session['role'] in ['teacher', 'admin'] %}

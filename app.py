@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['ALLOWED_EXTENSIONS'] = {'mp4', 'avi', 'mov', 'wmv'}
+app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'xlsx', 'docx', 'pptx', 'mp4', 'avi', 'mov', 'wmv'}
 app.secret_key = 'supersecretkey'
 
 # Simple in-memory user database
@@ -20,7 +20,7 @@ users_db = {
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-# Helper function to get all lectures
+5# Helper function to get all lectures
 def get_lectures():
     lectures = []
     if os.path.exists('lectures.txt'):
@@ -44,6 +44,37 @@ def get_announcements():
 @app.route('/')
 def home():
     return render_template('home.html')
+
+# New route to upload notes
+@app.route('/notes/upload', methods=['GET', 'POST'])
+def upload_notes():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File successfully uploaded')
+            return redirect(url_for('view_notes'))
+
+    return render_template('upload_notes.html')
+
+@app.route('/uploads/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# New route to view uploaded notes
+@app.route('/notes', methods=['GET'])
+def view_notes():
+    # List all files in the upload folder
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    files = [f for f in files if allowed_file(f)]
+    return render_template('notes.html', files=files)
 
 # User Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -169,6 +200,34 @@ def publish():
             flash('Invalid input or file type!', 'danger')
 
     return render_template('publish.html')
+
+@app.route('/notes', methods=['GET', 'POST'])
+def notes():
+    if 'role' not in session or session['role'] != 'teacher':
+        flash('Access denied! Teachers only.', 'danger')
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        title = request.form['title']
+        professor = request.form['professor']
+        file = request.files['document']
+
+        if title and professor and file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+
+            # Save the lecture details
+            with open('notes.txt', 'a') as f:
+                f.write(f'{title},{professor},{filename}\n')
+
+            flash('Lecture published successfully!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid input or file type!', 'danger')
+
+    return render_template('notes.html')
+
 
 # Stream a live lecture (restricted to teachers)
 @app.route('/stream')
