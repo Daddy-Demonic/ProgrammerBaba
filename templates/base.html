@@ -8,7 +8,10 @@
 </head>
 <body>
     <header>
+        <div class="container">
+        <img src="https://www.shutterstock.com/shutterstock/photos/2278726727/display_1500/stock-vector-minimalistic-circular-logo-sample-vector-2278726727.jpg" alt="logo" height="150px" width="160px" >
         <h1><span style="font-family: comic sans ms; font-size: 42px; text-shadow: 2px 2px 4px #000000;"><a href="{{ url_for('home') }}"> EDU ASSISTANT</a></span></h1>
+       </div>
         <nav>
             <a href="{{ url_for('home') }}">Home</a>
             {% if 'username' in session %}
